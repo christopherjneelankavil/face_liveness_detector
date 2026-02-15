@@ -11,6 +11,7 @@ A lightweight, browser-based face liveness detection system built with React, Vi
   - **Blink Verification**: Requires natural blink patterns (close → reopen) to confirm liveness.
 - **Challenge-Response**: Randomized sequence of head movements (Left, Right, Up, Down) and blinks.
 - **Privacy-First**: All processing happens locally in the browser. No images are sent to any server.
+- **Multi-Face Tracking**: Automatically detects up to 4 faces and locks onto the closest/largest face for liveness verification.
 - **Lightweight**: Uses `@mediapipe/tasks-vision` with assets loaded from CDN (~2 MB).
 
 ## Tech Stack
@@ -50,7 +51,7 @@ A lightweight, browser-based face liveness detection system built with React, Vi
 ## How It Works
 
 1. **Initialization**: Loads the MediaPipe FaceLandmarker model from the Google CDN.
-2. **Face Detection**: Acquired webcam stream is analyzed for face landmarks in real-time.
+2. **Face Detection**: Acquires webcam stream and detects up to 4 faces. Selects the largest face (closest to camera) for tracking.
 3. **Challenge Sequencer**:
    - Users are presented with a randomized sequence of challenges (e.g., "Turn Left", "Blink", "Look Up").
 4. **Validation**:
@@ -61,7 +62,7 @@ A lightweight, browser-based face liveness detection system built with React, Vi
 ## Configuration
 
 Tunable constants in `src/lib/motionValidator.ts`:
-- `MIN_DISPLACEMENT`: Minimum normalized distance the head must turn.
+- `MIN_DISPLACEMENT_HORIZONTAL` / `MIN_DISPLACEMENT_VERTICAL`: Minimum normalized distance the head must turn (lower for up/down).
 - `MAX_FRAME_DELTA`: Maximum allowed frame-to-frame change (prevents photo swapping).
 - `MIN_DIRECTIONAL_RATIO`: Percentage of frames that must move in the target direction.
 

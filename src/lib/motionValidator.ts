@@ -10,7 +10,14 @@ export interface MotionResult {
 
 // ── Tunable constants ────────────────────────────────────────────
 /** Minimum total displacement in the target axis to count as a real movement */
-const MIN_DISPLACEMENT = 0.30;
+const MIN_DISPLACEMENT_HORIZONTAL = 0.30;
+const MIN_DISPLACEMENT_VERTICAL = 0.18;  // lower threshold for lookUp / lookDown
+
+function getMinDisplacement(direction: ChallengeDirection): number {
+  return direction === 'lookUp' || direction === 'lookDown'
+    ? MIN_DISPLACEMENT_VERTICAL
+    : MIN_DISPLACEMENT_HORIZONTAL;
+}
 
 /** Maximum allowed frame-to-frame jump in the target axis (anti-photo-swap) */
 const MAX_FRAME_DELTA = 0.12;
@@ -96,11 +103,12 @@ export class MotionValidator {
     const directionalRatio = correctDirectionCount / (history.length - 1);
 
     // Progress is displacement normalized by min required
-    const progress = Math.min(1, Math.max(0, totalDisplacement / MIN_DISPLACEMENT));
+    const minDisp = getMinDisplacement(direction);
+    const progress = Math.min(1, Math.max(0, totalDisplacement / minDisp));
 
     // All three checks must pass
     const isValid =
-      totalDisplacement >= MIN_DISPLACEMENT &&
+      totalDisplacement >= minDisp &&
       directionalRatio >= MIN_DIRECTIONAL_RATIO;
 
     return { isValid, progress };

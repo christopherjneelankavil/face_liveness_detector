@@ -23,7 +23,7 @@ export async function getOrCreateFaceLandmarker(): Promise<FaceLandmarker> {
           delegate: 'GPU',
         },
         runningMode: 'VIDEO',
-        numFaces: 1,
+        numFaces: 4,
         outputFaceBlendshapes: true,   // Needed for blink detection
         outputFacialTransformationMatrixes: false,
       });

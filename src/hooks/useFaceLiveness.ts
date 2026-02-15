@@ -3,6 +3,7 @@ import { getOrCreateFaceLandmarker, destroyFaceLandmarker } from '../lib/mediapi
 import { extractHeadPose } from '../lib/poseAnalyzer';
 import { MotionValidator, type ChallengeDirection } from '../lib/motionValidator';
 import { BlinkDetector } from '../lib/blinkDetector';
+import { selectLargestFace } from '../lib/faceSelector';
 import type { FaceLandmarker } from '@mediapipe/tasks-vision';
 
 // ── Types ────────────────────────────────────────────────────────
@@ -216,9 +217,10 @@ export function useFaceLiveness(challengeSequence: ChallengeStep[]) {
         return;
       }
 
-      const hasFace = result.faceLandmarks && result.faceLandmarks.length > 0;
+      // Select the largest (closest) face from all detected faces
+      const selected = selectLargestFace(result.faceLandmarks, result.faceBlendshapes);
 
-      if (!hasFace) {
+      if (!selected) {
         setState(prev => ({
           ...prev,
           isFaceDetected: false,
@@ -232,7 +234,7 @@ export function useFaceLiveness(challengeSequence: ChallengeStep[]) {
 
       setState(prev => ({ ...prev, isFaceDetected: true }));
 
-      // Process the current challenge step
+      // Process the current challenge step using the selected face
       if (isRunningRef.current) {
         const step = challengeSequence[currentStepRef.current];
         const elapsed = Date.now() - stepStartTime.current;
@@ -247,8 +249,8 @@ export function useFaceLiveness(challengeSequence: ChallengeStep[]) {
 
         setState(prev => prev.stepStatus === 'active' ? { ...prev, timeRemaining } : prev);
 
-        const landmarks = result.faceLandmarks[0];
-        const blendshapes = result.faceBlendshapes;
+        const landmarks = selected.landmarks;
+        const blendshapes = selected.blendshapes;
         const pose = extractHeadPose(landmarks);
 
         if (step.type === 'center') {
